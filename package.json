@@ -1,0 +1,52 @@
+{
+  "name": "arize-agentkit-tracing-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.js demo: Scalekit AgentKit tool executions and OpenAI LLM calls in one Arize AX trace",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scalekit-developers/arize-agentkit-tracing-demo.git"
+  },
+  "keywords": [
+    "scalekit",
+    "agentkit",
+    "arize",
+    "opentelemetry",
+    "openinference",
+    "observability",
+    "tracing",
+    "llm",
+    "tool-calling"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "verify": "node --experimental-strip-types scripts/verify-spans.ts"
+  },
+  "dependencies": {
+    "@arizeai/openinference-instrumentation-openai": "^4.1.6",
+    "@arizeai/openinference-semantic-conventions": "^2.6.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.221.0",
+    "@opentelemetry/instrumentation": "^0.221.0",
+    "@opentelemetry/resources": "^2.10.0",
+    "@opentelemetry/sdk-trace-node": "^2.10.0",
+    "@opentelemetry/semantic-conventions": "^1.43.0",
+    "@scalekit-sdk/node": "^2.11.0",
+    "next": "16.2.9",
+    "openai": "^6.49.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,358 @@
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4
+ * Hallmark · genre: atmospheric · macrostructure: Index-First
+ * theme: Terminal · enrichment: none · nav: N8 · footer: Ft2
+ * tone: technical · anchor hue: 145 (phosphor)
+ * Differs from last (Workbench / amber): macrostructure + accent hue + nav
+ */
+@import 'tailwindcss';
+@import '../tokens.css';
+
+html,
+body {
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: color-mix(in oklch, var(--color-accent) 35%, transparent);
+  color: var(--color-ink);
+}
+
+/* N8 · Terminal command nav */
+.nav-term {
+  padding: var(--space-xs) var(--page-gutter);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  background: var(--color-paper-2);
+}
+
+.nav-term__line {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  margin: 0;
+  color: var(--color-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-term__line .prompt {
+  color: var(--color-accent);
+  padding-right: 0.4ch;
+}
+
+.nav-term__line .cmd {
+  color: var(--color-ink);
+}
+
+.nav-term__line a {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.nav-term__line a:hover {
+  color: var(--color-accent);
+}
+
+.nav-term__line a:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.caret {
+  display: inline-block;
+  width: 1ch;
+  margin-left: 0.15ch;
+  animation: blink 1.05s steps(2) infinite;
+  color: var(--color-accent);
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Index-First shell */
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-main {
+  flex: 1;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--page-gutter) var(--space-xl);
+}
+
+/* Index intro — short label, no display hero */
+.index-lede {
+  margin: 0 0 var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  max-width: 58ch;
+}
+
+.index-lede strong {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+/* Prompt as command row */
+.cmd-form {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-2xs);
+  align-items: start;
+  margin-bottom: var(--space-lg);
+  padding: var(--space-xs);
+  border: var(--rule-hair) solid var(--color-rule-strong);
+  background: var(--color-paper-2);
+  border-radius: var(--radius);
+}
+
+.cmd-prompt {
+  padding-top: 0.55rem;
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  user-select: none;
+}
+
+.cmd-input {
+  width: 100%;
+  min-height: 2.75rem;
+  resize: vertical;
+  padding: 0.5rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  outline: none;
+}
+
+.cmd-input::placeholder {
+  color: var(--color-ink-3);
+}
+
+.cmd-input:focus {
+  /* focus ring on the form shell instead */
+}
+
+.cmd-form:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-accent) 40%, transparent);
+}
+
+.cmd-run {
+  align-self: stretch;
+  padding: 0 var(--space-sm);
+  border: none;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: filter var(--dur-short) var(--ease-out), transform 80ms var(--ease-out);
+}
+
+.cmd-run:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.cmd-run:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.cmd-run:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cmd-run:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 414px) {
+  .cmd-form {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .cmd-run {
+    grid-column: 1 / -1;
+    min-height: 2.5rem;
+  }
+}
+
+.err-box {
+  margin: 0 0 var(--space-md);
+  padding: var(--space-xs) var(--space-sm);
+  border: var(--rule-hair) solid color-mix(in oklch, var(--color-err) 50%, var(--color-rule));
+  background: var(--color-err-bg);
+  color: var(--color-err);
+  font-size: var(--text-xs);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  border-radius: var(--radius);
+}
+
+/* Index sections — hairline rules, row list */
+.index-block {
+  margin-bottom: var(--space-lg);
+}
+
+.index-label {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+
+.reply-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  white-space: pre-wrap;
+  max-width: 65ch;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  margin-bottom: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+.meta-row code {
+  color: var(--color-ink-2);
+  word-break: break-all;
+}
+
+/* Span index — the page IS this list */
+.span-index {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: var(--rule-hair) solid var(--color-rule);
+  font-variant-numeric: tabular-nums;
+}
+
+.span-index li {
+  display: grid;
+  grid-template-columns: 2.5rem 3.5rem 1fr auto auto;
+  gap: var(--space-2xs);
+  align-items: baseline;
+  padding: 0.45rem 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+  min-width: 0;
+}
+
+.span-index li:hover {
+  background: color-mix(in oklch, var(--color-paper-3) 70%, transparent);
+}
+
+.span-index li.is-error {
+  color: var(--color-err);
+}
+
+.span-n {
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.span-kind {
+  color: var(--color-accent);
+  letter-spacing: 0.04em;
+}
+
+.span-index li.is-error .span-kind {
+  color: var(--color-err);
+}
+
+.span-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-ink);
+}
+
+.span-status {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.span-ms {
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty-index {
+  margin: 0;
+  padding: var(--space-md) 0;
+  border-top: var(--rule-hair) solid var(--color-rule);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+}
+
+.foot-note {
+  margin: var(--space-sm) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  max-width: 58ch;
+}
+
+/* Ft2 · Inline single line */
+.foot-inline {
+  margin-top: auto;
+  padding: var(--space-sm) var(--page-gutter);
+  border-top: var(--rule-hair) solid var(--color-rule);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  justify-content: space-between;
+}
+
+.foot-inline span:first-child {
+  color: var(--color-ink-2);
+}
