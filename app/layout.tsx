@@ -10,9 +10,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'scalekit-arize · local span index',
+  title: 'scalekit-arize-phoenix · tracing lab',
   description:
-    'Run a Scalekit-connected agent and index agent, LLM, and tool spans in one local tree.',
+    'Trace Scalekit AgentKit tool runs in Arize Phoenix. One prompt creates one AGENT / LLM / TOOL timeline.',
 };
 
 export default function RootLayout({

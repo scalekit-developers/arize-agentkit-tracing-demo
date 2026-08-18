@@ -1,5 +1,5 @@
 /**
- * Arize AX tracer setup.
+ * Arize Phoenix tracer setup.
  *
  * Called once from `instrumentation.ts` (Next.js runs that before any route
  * module is imported). Order matters and is not negotiable:
@@ -9,6 +9,8 @@
  *   3. only then create the OpenAI client
  *
  * `lib/agent.ts` constructs its OpenAI client lazily for exactly this reason.
+ *
+ * Destination is local Arize Phoenix (OTLP HTTP). No Arize AX space/key.
  */
 
 import { NodeTracerProvider, BatchSpanProcessor } from '@opentelemetry/sdk-trace-node';
@@ -24,57 +26,43 @@ let started = false;
 let provider: NodeTracerProvider | undefined;
 
 /**
- * The OTLP HTTP exporter needs the signal-specific path. Arize's docs and the
- * gRPC transport both use the `/v1` base, so accept either and fix it up rather
- * than failing in the way that is hardest to diagnose — a silent no-op export.
+ * The OTLP HTTP exporter needs the signal-specific path. Accept a `/v1` base
+ * or a full `/v1/traces` URL so a missing suffix does not become a silent miss.
  */
 function normalizeEndpoint(endpoint: string): string {
   const trimmed = endpoint.replace(/\/+$/, '');
   return trimmed.endsWith('/v1') ? `${trimmed}/traces` : trimmed;
 }
 
+const DEFAULT_PHOENIX_OTLP = 'http://localhost:6006/v1/traces';
+
 export async function initArize(): Promise<void> {
   if (started) return;
   started = true;
 
-  const spaceId = process.env.ARIZE_SPACE_ID;
-  const apiKey = process.env.ARIZE_API_KEY;
-  const projectName = process.env.ARIZE_PROJECT_NAME ?? 'agentkit-tracing-demo';
+  const projectName =
+    process.env.PHOENIX_PROJECT_NAME ??
+    process.env.ARIZE_PROJECT_NAME ??
+    'agentkit-tracing-demo';
 
-  if (!spaceId || !apiKey) {
-    console.warn(
-      '[arize] ARIZE_SPACE_ID / ARIZE_API_KEY not set — running with local span capture only, nothing will be exported.'
-    );
-  }
-
-  // Region is NOT assumed. Arize runs US / EU / Canada clusters and sending to
-  // the wrong one fails in a way that looks exactly like "no traces". See
-  // .env.example for the full endpoint table.
   const endpoint = normalizeEndpoint(
-    process.env.ARIZE_COLLECTOR_ENDPOINT ??
-      process.env.ARIZE_OTLP_ENDPOINT ??
-      'https://otlp.arize.com/v1/traces'
+    process.env.PHOENIX_COLLECTOR_ENDPOINT ??
+      process.env.PHOENIX_OTLP_ENDPOINT ??
+      DEFAULT_PHOENIX_OTLP
   );
 
   provider = new NodeTracerProvider({
     resource: resourceFromAttributes({
-      // Required. Arize rejects the export with a 500 if the project name is
-      // missing — service.name alone is not enough.
       [SEMRESATTRS_PROJECT_NAME]: projectName,
       [ATTR_SERVICE_NAME]: 'arize-agentkit-tracing-demo',
     }),
     spanProcessors: [
-      new CollectingSpanProcessor(), // demo-only, see span-collector.ts
-      ...(spaceId && apiKey
-        ? [
-            new BatchSpanProcessor(
-              new OTLPTraceExporter({
-                url: endpoint,
-                headers: { space_id: spaceId, api_key: apiKey },
-              })
-            ),
-          ]
-        : []),
+      new CollectingSpanProcessor(), // demo UI tree
+      new BatchSpanProcessor(
+        new OTLPTraceExporter({
+          url: endpoint,
+        })
+      ),
     ],
   });
 
@@ -99,14 +87,14 @@ export async function initArize(): Promise<void> {
   );
 
   console.log(
-    `[arize] tracing initialised — project="${projectName}" endpoint="${endpoint}"`
+    `[phoenix] tracing initialised — project="${projectName}" endpoint="${endpoint}"`
   );
 }
 
 /**
  * Flush pending OTLP batches so a just-finished demo run is more likely to
- * appear in Arize before the user switches tabs. Local capture is synchronous;
- * export is not. No-op when the exporter was never registered.
+ * appear in Arize Phoenix before the user switches tabs. Local capture is synchronous;
+ * export is not.
  */
 export async function flushTraces(): Promise<void> {
   await provider?.forceFlush();
