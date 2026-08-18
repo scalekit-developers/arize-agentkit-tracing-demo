@@ -1,6 +1,6 @@
-# Arize AX + Scalekit AgentKit — Tracing Demo
+# Arize Phoenix + Scalekit AgentKit — Tracing Demo
 
-A focused Next.js demo that puts **Scalekit AgentKit tool executions and OpenAI (or LiteLLM) LLM calls into a single [Arize AX](https://arize.com) trace** — so you can see what an agent actually did, including when a tool failed and the model claimed it succeeded.
+A focused Next.js demo that puts **Scalekit AgentKit tool executions and OpenAI (or LiteLLM) LLM calls into a single [Arize Phoenix](https://arize.com/docs/phoenix) trace** — so you can see what an agent actually did, including when a tool failed and the model claimed it succeeded.
 
 **What this proves**
 
@@ -15,7 +15,7 @@ The integration surface is one file — [`lib/traced-tools.ts`](lib/traced-tools
 
 ## Who this is for
 
-- You’re building agents with **Scalekit AgentKit** and want **LLM observability** in Arize AX (or any OpenTelemetry/OpenInference backend).
+- You’re building agents with **Scalekit AgentKit** and want **LLM observability** in Arize Phoenix.
 - You want a **runnable** Next.js app, not a blog post: install, set env, `npm run verify`, `npm run dev`.
 - You care about the difference between “the model requested a tool” and “the tool actually ran and returned X.”
 
@@ -69,7 +69,7 @@ A server-side integration (Scalekit emitting spans itself) has to propagate `tra
 - **Node.js 20+**
 - A [Scalekit](https://app.scalekit.com) project with AgentKit and at least one **Active** connected account
 - An **OpenAI API key**, or any **OpenAI-compatible** proxy (LiteLLM / Scalekit LLM Gateway)
-- Optional: an [Arize AX](https://app.arize.com) space (the app still runs and renders local span trees without it)
+- Local [Arize Phoenix](https://arize.com/docs/phoenix): `uvx arize-phoenix serve`
 
 ---
 
@@ -81,9 +81,11 @@ A server-side integration (Scalekit emitting spans itself) has to propagate `tra
 | Authorize a user | [Authorize](https://docs.scalekit.com/agentkit/tools/authorize.md) |
 | Execute tools | [Tools](https://docs.scalekit.com/agentkit/tools/execute.md) |
 | Scalekit Node SDK | [Node.js SDK](https://docs.scalekit.com/dev-kit/sdks/nodejs/) |
-| Arize OpenTelemetry / OpenInference | [Arize AX docs](https://docs.arize.com) |
+| Arize Phoenix tracing | [Arize Phoenix docs](https://arize.com/docs/phoenix) |
 
 ---
+
+After `npm run dev`, open [http://localhost:3000/guide](http://localhost:3000/guide) first. The guide says what Scalekit does, what Arize Phoenix does, what a span is, and why the first reply can take 30–90 seconds.
 
 ## Quick start
 
@@ -118,13 +120,19 @@ Checks the outcomes that matter against a stubbed Scalekit client that returns r
 
 The middle rows are the ones that are easy to get wrong and matter most — see [Known gap](#known-gap-error-detection-is-a-guess).
 
-### Run
+### Run Arize Phoenix, then the demo
+
+```bash
+uvx arize-phoenix serve
+```
+
+Leave that running. UI: [http://localhost:6006](http://localhost:6006).
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), type a request that needs a connected tool, and the page renders the span tree it just produced alongside the trace ID. The demo flushes the OTLP batch after each run; Arize can still lag a few seconds before the trace is searchable.
+Open [http://localhost:3000](http://localhost:3000), type a request that needs a connected tool. The page shows the local span tree. Arize Phoenix should show the same turn under project `agentkit-tracing-demo` a few seconds later.
 
 ---
 
@@ -163,27 +171,19 @@ Arize still gets LLM spans: the OpenInference instrumentor patches the OpenAI SD
 
 Aliases: `LITELLM_API_KEY`, `LITELLM_BASE_URL`, `OPENAI_API_BASE`.
 
-### Arize AX
+### Arize Phoenix
 
-- **Dashboard → Settings → Space Settings** for `ARIZE_SPACE_ID` and `ARIZE_API_KEY`
-- `ARIZE_PROJECT_NAME` is **required**. Arize rejects the export with an HTTP 500 if it is missing; `service.name` alone is not enough.
-- `ARIZE_COLLECTOR_ENDPOINT` — **do not assume US**:
+- Run `uvx arize-phoenix serve`. UI: `http://localhost:6006`.
+- `PHOENIX_COLLECTOR_ENDPOINT` defaults to `http://localhost:6006/v1/traces`.
+- `PHOENIX_PROJECT_NAME` defaults to `agentkit-tracing-demo`.
 
-  | Cluster | Endpoint |
-  |---|---|
-  | US | `https://otlp.arize.com/v1/traces` |
-  | EU | `https://otlp.eu-west-1a.arize.com/v1/traces` |
-  | Canada | `https://otlp.ca-central-1a.arize.com/v1/traces` |
-
-This app uses the OTLP **HTTP** exporter, which needs the signal-specific `/v1/traces` path. A bare `/v1` (the gRPC base) is normalized automatically, and `ARIZE_OTLP_ENDPOINT` is accepted as an alias.
-
-Without Arize credentials the app still runs and renders traces locally — nothing is exported.
+This app uses the OTLP **HTTP** exporter. A bare `/v1` base is normalized to `/v1/traces`.
 
 ### Privacy
 
 TOOL and LLM spans include full tool arguments, tool results, and chat content by default (that is what makes the demo useful). `scalekit.identifier` is often an email. The in-memory span tree is also returned to the browser for the UI.
 
-Treat this as a **local prototype**. Before reusing the recipe in production: redact or hash identifiers, drop PII from `input.value` / `output.value`, and do not return raw span attributes to untrusted clients. Arize also supports server-side scrubbing in project settings.
+Treat this as a **local prototype**. Before reusing the recipe in production: redact or hash identifiers, drop PII from `input.value` / `output.value`, and do not return raw span attributes to untrusted clients.
 
 ---
 
@@ -209,7 +209,7 @@ POST /api/agent
    │    ├─ TOOL executeTool(name, …)      ← lib/traced-tools.ts
    │    └─ LLM  follow-up completion
    │
-   ├─ OTLP export → Arize AX (if credentials set)
+   ├─ OTLP export → Arize Phoenix (`localhost:6006`)
    └─ JSON span tree → UI (demo only)
 ```
 

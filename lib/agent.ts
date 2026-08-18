@@ -81,6 +81,8 @@ export interface AgentResult {
   reply: string;
   traceId: string;
   turns: number;
+  /** Tools Scalekit listed for this identifier before the model call. */
+  toolCount: number;
   /** True when the active span is recording (false ⇒ OTel API/provider mismatch). */
   recording: boolean;
 }
@@ -154,7 +156,7 @@ export async function runAgent(
           const reply = message.content ?? '';
           span.setAttribute(OUTPUT_VALUE, reply);
           span.setStatus({ code: SpanStatusCode.OK });
-          return { reply, traceId, turns, recording };
+          return { reply, traceId, turns, toolCount: discovered.length, recording };
         }
 
         for (const toolCall of toolCalls) {
@@ -216,7 +218,7 @@ export async function runAgent(
       const reply = `Stopped after ${MAX_TURNS} turns without a final answer.`;
       span.setAttribute(OUTPUT_VALUE, reply);
       span.setStatus({ code: SpanStatusCode.OK });
-      return { reply, traceId, turns, recording };
+      return { reply, traceId, turns, toolCount: discovered.length, recording };
     } catch (error) {
       span.recordException(error as Error);
       span.setStatus({

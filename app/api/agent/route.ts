@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       reply: result.reply,
       traceId: result.traceId,
       turns: result.turns,
+      toolCount: result.toolCount,
       recording: result.recording,
       spans,
     });
