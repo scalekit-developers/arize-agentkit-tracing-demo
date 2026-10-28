@@ -2,7 +2,7 @@
 
 A focused Next.js demo that puts **Scalekit AgentKit tool executions and OpenAI (or LiteLLM) LLM calls into a single [Arize Phoenix](https://arize.com/docs/phoenix) trace** — so you can see what an agent actually did, including when a tool failed and the model claimed it succeeded.
 
-Scalekit provides auth and actions on behalf of users, with 500+ connectors and 20,000+ tools.
+Scalekit provides auth and actions on behalf of users, with 600+ connectors and 35,000+ tools.
 
 **What this proves**
 
